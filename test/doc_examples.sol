@@ -54,6 +54,8 @@ interface i {
 contract extends {}
 contract export {}
 
+abstract contract testAbstract {}
+
 contract c {
   function c()
   {
@@ -66,6 +68,20 @@ contract c {
   uint256 val2;
   uint256 val3;
   uint256 val4;
+}
+
+contract receive_fallback_constructor {
+    uint x;
+    constructor() {
+      x = 1;
+    }
+
+    receive() external payable {
+    }
+
+    fallback() external {
+      x = 2;
+    }
 }
 
 contract test {

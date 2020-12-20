@@ -479,6 +479,7 @@ Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 /* Tokens */
 
 EmitToken       = "emit"       !IdentifierPart
+AbstractToken   = "abstract"   !IdentifierPart 
 ExperimentalToken      = "experimental"      !IdentifierPart
 ExternalToken   = "external"   !IdentifierPart
 PureToken       = "pure"       !IdentifierPart
@@ -492,6 +493,8 @@ ConstantToken   = "constant"   !IdentifierPart
 ContinueToken   = "continue"   !IdentifierPart
 ContractToken   = "contract"   !IdentifierPart
 ConstructorToken   = "constructor"   !IdentifierPart
+ReceiveToken    = "receive"    !IdentifierPart
+FallbackToken   = "fallback"    !IdentifierPart
 DaysToken       = "days"       !IdentifierPart
 DeleteToken     = "delete"     !IdentifierPart
 DoToken         = "do"         !IdentifierPart
@@ -1425,7 +1428,7 @@ ThrowStatement
     }
 
 ContractStatement
-  = ContractToken __ id:Identifier __ is:IsStatement? __
+  = abstract:AbstractToken? __ ContractToken __ id:Identifier __ is:IsStatement? __
     "{" __ body:SourceElements? __ "}"
   {
     return {
@@ -1433,6 +1436,7 @@ ContractStatement
       name: id.name,
       is: is != null ? is.names : [],
       body: optionalList (body),
+      is_abstract: abstract != null,
       start: location().start.offset,
       end: location().end.offset
     }
@@ -1549,6 +1553,31 @@ ConstructorDeclaration
         end: location().end.offset
       };
     }
+
+FallbackDeclaration
+  = FallbackToken __ fnname:FunctionName __ args:ModifierArgumentList? __ body:FunctionBody
+    {
+      return {
+        type: "FallbackDeclaration",
+        modifiers: args,
+        body: body,
+        start: location().start.offset,
+        end: location().end.offset
+      };
+    }
+
+ReceiveDeclaration
+  = ReceiveToken __ fnname:FunctionName __ args:ModifierArgumentList? __ body:FunctionBody
+    {
+      return {
+        type: "ReceiveDeclaration",
+        modifiers: args,
+        body: body,
+        start: location().start.offset,
+        end: location().end.offset
+      };
+    }
+
 
 ReturnsDeclaration
   = ReturnsToken __ params:("(" __ InformalParameterList __ ")")
@@ -1754,6 +1783,8 @@ SourceElement
   / ModifierDeclaration
   / FunctionDeclaration
   / ConstructorDeclaration
+  / FallbackDeclaration
+  / ReceiveDeclaration
   / UsingStatement
 
 InlineAssemblyBlock

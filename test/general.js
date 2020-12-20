@@ -1,5 +1,5 @@
 "use strict";
-
+const assert = require("chai").assert;
 let SolidityParser = require("../index.js");
 
 describe("Parser", function() {
@@ -19,6 +19,37 @@ describe("Built Parser", function() {
 
     it("parses documentation examples using imports parser without throwing an error", function() {
         SolidityParser.parseFile("./test/doc_examples.sol", "imports", false);
+    });
+});
+
+
+describe("Should parse constructor, receive and fallback", function() {
+    it("parses contracts with constructor, receive and fallback", function() {
+       let all =  SolidityParser.parseFile("./test/doc_examples.sol", false);
+       let body = all.body;
+       for (let i = 0; i < body.length; i++) {
+            if(body[i].type === "ContractStatement" && body[i].name ==="receive_fallback_constructor") {
+                    assert.isTrue(body[i].body[1].type === "ConstructorDeclaration");
+                    assert.isTrue(body[i].body[2].type === "ReceiveDeclaration");
+                    assert.isTrue(body[i].body[3].type === "FallbackDeclaration");
+            }
+        }
+    });
+});
+
+describe("Should parse abstract", function() {
+    it("parses contracts with abstract", function() {
+       let all =  SolidityParser.parseFile("./test/doc_examples.sol", false);
+       let body = all.body;
+       for (let i = 0; i < body.length; i++) {
+           if(body[i].type === "ContractStatement" && body[i].name ==="testAbstract") {
+               assert.isTrue(body[i].is_abstract);
+           }
+
+           if(body[i].type === "ContractStatement" && body[i].name !=="testAbstract") {
+               assert.isFalse(body[i].is_abstract);
+           }
+       }
     });
 });
 
