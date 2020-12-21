@@ -23,6 +23,19 @@ describe("Built Parser", function() {
 });
 
 
+describe("Should parse pragma abicoder", function() {
+    it("parses abi coder with v2", function() {
+       let all =  SolidityParser.parseFile("./test/doc_examples.sol", false);
+       let body = all.body;
+       for (let i = 0; i < body.length; i++) {
+            if(body[i].type === "AbiCoderPragmaStatement") {
+                assert.isTrue(body[i].version.name === "v2");
+            }
+        }
+    });
+});
+
+
 describe("Should parse constructor, receive and fallback", function() {
     it("parses contracts with constructor, receive and fallback", function() {
        let all =  SolidityParser.parseFile("./test/doc_examples.sol", false);

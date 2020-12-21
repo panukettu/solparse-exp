@@ -481,6 +481,7 @@ Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 EmitToken       = "emit"       !IdentifierPart
 AbstractToken   = "abstract"   !IdentifierPart 
 ExperimentalToken      = "experimental"      !IdentifierPart
+AbiCoderToken   = "abicoder"   !IdentifierPart
 ExternalToken   = "external"   !IdentifierPart
 PureToken       = "pure"       !IdentifierPart
 ViewToken       = "view"       !IdentifierPart
@@ -1229,6 +1230,14 @@ PragmaStatement
     return {
       type: "ExperimentalPragmaStatement",
       feature: featureName,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
+   / PragmaToken __ AbiCoderToken __ version:(Identifier / StringLiteral) EOS {
+    return {
+      type: "AbiCoderPragmaStatement",
+      version: version,
       start: location().start.offset,
       end: location().end.offset
     }
