@@ -36,6 +36,22 @@ describe("Should parse pragma abicoder", function() {
 });
 
 
+describe("Should handle incomplete stametements", function() {
+    it("should be able to get position of error", function() {
+ 
+            let all =  SolidityParser.parseFile("./test/example_incomplete.sol", false);
+            let body = all.body;
+            for (let i = 0; i < body.length; i++) {
+                    if(body[i].type === "ContractStatement") {
+                        assert.isTrue(body[i].body[5].type === "ConstructorDeclaration");
+                        assert.isTrue(body[i].body[5].body.body[0].type === "IncompleteIdentifier");
+                        assert.isTrue(body[i].body[5].body.body[0].expression.name === "ow");
+                    }
+            } 
+    });
+});
+
+
 describe("Should parse constructor, receive and fallback", function() {
     it("parses contracts with constructor, receive and fallback", function() {
        let all =  SolidityParser.parseFile("./test/doc_examples.sol", false);

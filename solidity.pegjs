@@ -1093,6 +1093,7 @@ Statement
   = Block
   / VariableStatement
   / EmptyStatement
+  / IncompleteIdentifier
   / ExpressionStatement
   / PlaceholderStatement
   / IfStatement
@@ -1178,6 +1179,31 @@ Initialiser
 
 EmptyStatement
   = ";" { return { type: "EmptyStatement", start: location().start.offset, end: location().end.offset }; }
+
+IncompleteIdentifier
+   = !("{" / ContractToken / InterfaceToken / LibraryToken / StructToken / EnumToken
+  / Block
+  / VariableStatement
+  / EmptyStatement
+  / ExpressionStatement
+  / PlaceholderStatement
+  / IfStatement
+  / IterationStatement
+  / InlineAssemblyStatement
+  / ContinueStatement
+  / BreakStatement
+  / ReturnStatement
+  / ThrowStatement
+  / UsingStatement
+  / EmitStatement )
+    expression:Identifier {
+      return {
+        type:  "IncompleteIdentifier",
+        expression: expression,
+        start: location().start.offset,
+        end: location().end.offset
+      };
+    }
 
 ExpressionStatement
   = !("{" / ContractToken / InterfaceToken / LibraryToken / StructToken / EnumToken) expression:Expression EOS {
