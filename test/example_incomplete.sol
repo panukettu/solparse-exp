@@ -11,5 +11,17 @@ contract Test {
     constructor() {
         ow
     }
+
+    function test(int number) returns (int name) {
+        return number   
+    }
+
+    function test2(int number) returns (int name) {
+        emit something
+    }
+
+    function test3(int number) returns (int name) {
+        number.t.x
+    }
     
 }

@@ -1102,9 +1102,11 @@ Statement
   / ContinueStatement
   / BreakStatement
   / ReturnStatement
+  / IncompleteReturnStatement
   / ThrowStatement
   / UsingStatement
   / EmitStatement
+  / IncompleteEmitStatement
 
 Block
   = "{" __ body:(StatementList __)? "}" {
@@ -1196,7 +1198,8 @@ IncompleteIdentifier
   / ThrowStatement
   / UsingStatement
   / EmitStatement )
-    expression:Identifier {
+    expression:PrimaryExpression tail:("." Identifier?)*
+   {
       return {
         type:  "IncompleteIdentifier",
         expression: expression,
@@ -1204,6 +1207,23 @@ IncompleteIdentifier
         end: location().end.offset
       };
     }
+
+  IncompleteReturnStatement
+  = ReturnToken __ argument:Expression {
+      return { type: "IncompleteReturnStatement", argument: argument, start: location().start.offset, end: location().end.offset };
+    }
+
+  IncompleteEmitStatement
+  = EmitToken __ callexpr:Identifier
+  {
+    return {
+      type: "IncompleteEmitStatement",
+      expression: callexpr,
+      start: location().start.offset,
+      end: location().end.offset
+    };
+  }
+
 
 ExpressionStatement
   = !("{" / ContractToken / InterfaceToken / LibraryToken / StructToken / EnumToken) expression:Expression EOS {
@@ -1213,7 +1233,7 @@ ExpressionStatement
         start: location().start.offset,
         end: location().end.offset
       };
-    }
+    } 
 
 IfStatement
   = IfToken __ "(" __ test:Expression __ ")" __
