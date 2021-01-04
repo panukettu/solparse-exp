@@ -1198,7 +1198,7 @@ IncompleteIdentifier
   / ThrowStatement
   / UsingStatement
   / EmitStatement )
-    expression:PrimaryExpression tail:("." Identifier?)*
+    expression:PrimaryExpression tail:("." /  __ "=" __ Identifier?)* 
    {
       return {
         type:  "IncompleteIdentifier",

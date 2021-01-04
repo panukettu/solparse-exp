@@ -18,10 +18,18 @@ contract Test {
 
     function test2(int number) returns (int name) {
         emit something
+        emit something(1, 2);
     }
 
     function test3(int number) returns (int name) {
         number.t.x
+        number.t.x = 10;
+    }
+
+    function test4(int number) returns (int name) {
+        number = test;
+        number = test
+
     }
     
 }
