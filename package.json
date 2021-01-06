@@ -1,6 +1,6 @@
 {
   "name": "solparse-exp-jb",
-  "version": "2.2.13",
+  "version": "2.2.14",
   "description": "PEG.js Solidity parser for Javascript, experimental jb to upgrade and work with vscode solidity, this should be merged with the generic repo when ready",
   "main": "index.js",
   "scripts": {

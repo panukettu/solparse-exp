@@ -319,6 +319,16 @@ contract FromSolparse is A, B, TestPrivate, TestInternal {
   }
 }
 
+contract TestAddress {
+  function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
+        require(address(this).balance >= value, "Address: insufficient balance for call");
+        require(isContract(target), "Address: call to non-contract");
+        
+        (bool success, bytes memory returndata) = target.call{ value: value }(data);
+        return _verifyCallResult(success, returndata, errorMessage);
+    }
+}
+
 contract CommentedOutFunction {
   // FYI: This empty function, as well as the commented
   // out function below (bad code) is important to this test.

@@ -721,6 +721,9 @@ Arguments
   / "(" __ "{" __ args:(NameValueList (__ ",")? )? __ "}" __ ")" {
       return optionalList(extractOptional(args, 0));
     }
+  /  "{" __ args:(NameValueList (__ ",")? )? __ "}" {
+    return optionalList(extractOptional(args, 0));
+  }
 
 ArgumentList
   = head:AssignmentExpression tail:(__ "," __ AssignmentExpression)* {
@@ -1198,7 +1201,7 @@ IncompleteIdentifier
   / ThrowStatement
   / UsingStatement
   / EmitStatement )
-    expression:PrimaryExpression tail:("." /  __ "=" __ Identifier?)* 
+    expression:PrimaryExpression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* 
    {
       return {
         type:  "IncompleteIdentifier",

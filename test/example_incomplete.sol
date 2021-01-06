@@ -31,5 +31,11 @@ contract Test {
         number = test
 
     }
+
+    function test5(int number) returns (int name) {
+        number = new test(number);
+        // number = new 
+
+    }
     
 }
