@@ -396,7 +396,7 @@ UnicodeEscapeSequence
     }
 
 VersionLiteral
-  = operator:(RelationalOperator / EqualityOperator / BitwiseXOROperator / Tilde)? __ ("v")? major:DecimalIntegerLiteral minor:("." DecimalIntegerLiteral)? patch:("." DecimalIntegerLiteral)? {
+  = operator:(RelationalOperator / EqualityPragmaOperator / BitwiseXOROperator / Tilde)? __ ("v")? major:DecimalIntegerLiteral minor:("." DecimalIntegerLiteral)? patch:("." DecimalIntegerLiteral)? {
     if (patch === null) {
       patch = 0;
     } else {
@@ -480,7 +480,8 @@ Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 
 EmitToken       = "emit"       !IdentifierPart
 AbstractToken   = "abstract"   !IdentifierPart 
-ExperimentalToken      = "experimental"      !IdentifierPart
+ExperimentalToken   = "experimental"      !IdentifierPart
+OverrideToken  = "override" !IdentifierPart
 AbiCoderToken   = "abicoder"   !IdentifierPart
 ExternalToken   = "external"   !IdentifierPart
 PureToken       = "pure"       !IdentifierPart
@@ -491,6 +492,7 @@ AsToken         = "as"         !IdentifierPart
 BreakToken      = "break"      !IdentifierPart
 CalldataToken   = "calldata"   !IdentifierPart
 ConstantToken   = "constant"   !IdentifierPart
+ImmutableToken   = "immutable"  !IdentifierPart
 ContinueToken   = "continue"   !IdentifierPart
 ContractToken   = "contract"   !IdentifierPart
 ConstructorToken   = "constructor"   !IdentifierPart
@@ -812,18 +814,57 @@ StorageLocationSpecifier
   / CalldataToken
 
 StateVariableSpecifiers
-  = specifiers:(VisibilitySpecifier __ ConstantToken?){
+ = constant:(ConstantToken/ImmutableToken) __ visibility:(VisibilitySpecifier) __? override:(OverrideToken)? __ {
     return {
-      visibility: specifiers[0][0],
-      isconstant: specifiers[2] ? true: false 
+      visibility: visibility? visibility[0]: null,
+      isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
+      isoverride: override?  true: false
     }
-  }
-  / specifiers:(ConstantToken __ VisibilitySpecifier?){
+   } 
+   /
+  constant:(ConstantToken/ImmutableToken) __? override:(OverrideToken)? __? visibility:(VisibilitySpecifier)? __ {
     return {
-      visibility: specifiers[2] ? specifiers[2][0] : null,
-      isconstant: true
+      visibility: visibility? visibility[0]: null,
+      isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
+      isoverride: override?  true: false
     }
-  }
+   } 
+   /
+   override:(OverrideToken) __ constant:(ConstantToken/ImmutableToken) __? visibility:(VisibilitySpecifier)? __ {
+    return {
+      visibility: visibility? visibility[0]: null,
+      isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
+      isoverride: override?  true: false
+    }
+   } /
+   override:(OverrideToken) __? visibility:(VisibilitySpecifier)? __? constant:(ConstantToken/ImmutableToken)? __ {
+    return {
+      visibility: visibility? visibility[0]: null,
+      isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
+      isoverride: override?  true: false
+    }
+   } /
+   visibility:(VisibilitySpecifier) __ override:(OverrideToken) __? constant:(ConstantToken/ImmutableToken)? __ {
+    return {
+       visibility: visibility? visibility[0]: null,
+      isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
+      isoverride: override?  true: false
+    }
+   }/
+   visibility:(VisibilitySpecifier) __? constant:(ConstantToken/ImmutableToken)? __? override:(OverrideToken)? __ {
+    return {
+      visibility: visibility? visibility[0]: null,
+      isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
+      isoverride: override?  true: false
+    }
+  } 
+
 
 StateVariableValue 
   = "=" __ expression:Expression {
@@ -839,6 +880,8 @@ StateVariableDeclaration
       literal: type,
       visibility: specifiers? specifiers.visibility : null,
       is_constant: specifiers? specifiers.isconstant : false,
+      is_immutable: specifiers? specifiers.isimmutable : false,
+      is_override: specifiers? specifiers.isoverride: false,
       value: value,
       start: location().start.offset,
       end: location().end.offset
@@ -961,6 +1004,9 @@ EqualityExpression
 EqualityOperator
   = "=="
   / "!="
+
+EqualityPragmaOperator
+ = "="
 
 Tilde
   = "~"
@@ -1501,13 +1547,13 @@ ContractStatement
   }
 
 InterfaceStatement
-  = InterfaceToken __ id:Identifier __
+  = InterfaceToken __ id:Identifier __ is:IsStatement? __
     "{" __ body:SourceElements? __ "}"
   {
     return {
       type: "InterfaceStatement",
       name: id.name,
-      is: [],
+      is: is != null ? is.names : [],
       body: optionalList (body),
       start: location().start.offset,
       end: location().end.offset

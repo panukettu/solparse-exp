@@ -323,7 +323,7 @@ contract TestAddress {
   function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
         require(address(this).balance >= value, "Address: insufficient balance for call");
         require(isContract(target), "Address: call to non-contract");
-        
+
         (bool success, bytes memory returndata) = target.call{ value: value }(data);
         return _verifyCallResult(success, returndata, errorMessage);
     }
@@ -343,6 +343,7 @@ contract CommentedOutFunction {
 
 library VarHasBrackets {
   string constant specialRight = "}";
+  string immutable specialRight2 = "}";
   //string storage specialLeft = "{";
 }
 
@@ -369,6 +370,22 @@ contract NewStuff {
 // modifier with expression
 contract MyContract {
   function fun() mymodifier(foo.bar()) {}
+}
+
+contract LetsHaveLotsOfKeywordsInStateVariablesInNoParticularOrderBecauseIsLotsOfFun {
+    uint public immutable override test = 1;
+    uint public constant  test2;
+    uint public override  test3;
+    uint constant override public test4;
+    uint constant override  test5;
+    uint constant public override test13;
+    uint override  test6;
+    uint constant test7;
+    uint public test12;
+    uint override public constant test8;
+    uint override constant public  test9;
+    uint override public  test10;
+    uint override constant test11;
 }
 
 library GetCode {
