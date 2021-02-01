@@ -1873,6 +1873,7 @@ SourceUnit
   / ContractStatement
   / InterfaceStatement
   / LibraryStatement
+  / StructDeclaration
 
 SourceElements
   = head:SourceElement tail:(__ SourceElement)* {

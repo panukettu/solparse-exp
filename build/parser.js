@@ -18732,6 +18732,9 @@ function peg$parse(input, options) {
           s0 = peg$parseInterfaceStatement();
           if (s0 === peg$FAILED) {
             s0 = peg$parseLibraryStatement();
+            if (s0 === peg$FAILED) {
+              s0 = peg$parseStructDeclaration();
+            }
           }
         }
       }
