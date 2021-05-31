@@ -8,7 +8,7 @@ pragma solidity >= 0.4.0;
 pragma solidity <= 0.4.0;
 pragma solidity < 0.4.0;
 pragma solidity > 0.4.0;
-pragma solidity != 0.4.0;
+//pragma solidity != 0.4.0;
 pragma solidity >=0.4.0 <0.4.8; // from https://github.com/ethereum/solidity/releases/tag/v0.4.0
 
 pragma solidity 0.4;
@@ -18,7 +18,7 @@ pragma solidity >= 0.4;
 pragma solidity <= 0.4;
 pragma solidity < 0.5;
 pragma solidity > 0.4;
-pragma solidity != 0.4;
+//pragma solidity != 0.4;
 pragma solidity >=0.4 <=0.4;
 
 pragma solidity 0;
@@ -28,7 +28,7 @@ pragma solidity >= 0;
 pragma solidity <= 0;
 pragma solidity < 1;
 pragma solidity > 0;
-pragma solidity != 0;
+//pragma solidity != 0;
 pragma solidity >=0 <=1;
 
 pragma solidity ~0.4.24;
@@ -365,6 +365,31 @@ contract NewStuff {
     string storage a = hex"ab1248fe";
     b[2+2];
   }
+}
+
+contract TryCatch {
+
+    function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory _data)
+        private returns (bool)
+    {
+        if (to.isContract()) {
+            try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
+                return retval == IERC721Receiver(to).onERC721Received.selector;
+            } catch (bytes memory reason) {
+                if (reason.length == 0) {
+                    revert("ERC721: transfer to non ERC721Receiver implementer");
+                } else {
+                    // solhint-disable-next-line no-inline-assembly
+                    assembly {
+                        revert(add(32, reason), mload(reason))
+                    }
+                }
+            }
+           
+        } else {
+            return true;
+        }
+    }
 }
 
 // modifier with expression

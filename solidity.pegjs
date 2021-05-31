@@ -479,6 +479,7 @@ Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 /* Tokens */
 
 EmitToken       = "emit"       !IdentifierPart
+RevertToken       = "revert"       !IdentifierPart
 AbstractToken   = "abstract"   !IdentifierPart 
 ExperimentalToken   = "experimental"      !IdentifierPart
 OverrideToken  = "override" !IdentifierPart
@@ -505,6 +506,7 @@ ElseToken       = "else"       !IdentifierPart
 EnumToken       = "enum"       !IdentifierPart
 EtherToken      = "ether"      !IdentifierPart
 EventToken      = "event"      !IdentifierPart
+ErrorToken      = "error"      !IdentifierPart
 FalseToken      = "false"      !IdentifierPart
 FinneyToken     = "finney"     !IdentifierPart
 ForToken        = "for"        !IdentifierPart
@@ -514,6 +516,8 @@ GetToken        = "get"        !IdentifierPart
 HexToken        = "hex"        !IdentifierPart
 HoursToken      = "hours"      !IdentifierPart
 IfToken         = "if"         !IdentifierPart
+TryToken        = "try"       !IdentifierPart
+CatchToken      = "catch"       !IdentifierPart
 IsToken         = "is"         !IdentifierPart
 IndexedToken    = "indexed"    !IdentifierPart
 ImportToken     = "import"     !IdentifierPart
@@ -1142,20 +1146,20 @@ Statement
   = Block
   / VariableStatement
   / EmptyStatement
-  / IncompleteIdentifier
   / ExpressionStatement
   / PlaceholderStatement
   / IfStatement
+  / TryStatement
   / IterationStatement
   / InlineAssemblyStatement
   / ContinueStatement
   / BreakStatement
   / ReturnStatement
-  / IncompleteReturnStatement
   / ThrowStatement
   / UsingStatement
   / EmitStatement
-  / IncompleteEmitStatement
+  / RevertStatement
+ 
 
 Block
   = "{" __ body:(StatementList __)? "}" {
@@ -1239,6 +1243,7 @@ IncompleteIdentifier
   / ExpressionStatement
   / PlaceholderStatement
   / IfStatement
+  / TryStatement
   / IterationStatement
   / InlineAssemblyStatement
   / ContinueStatement
@@ -1283,6 +1288,58 @@ ExpressionStatement
         end: location().end.offset
       };
     } 
+
+TryStatement 
+  = TryToken __ tryExpression:Statement __ 
+    tryStatement:Statement __
+    catchStatements: (CatchStatements)*
+    {
+      return {
+         type:  "TryStatement",
+         tryExpression: tryExpression,
+         tryStatement: tryStatement,
+         catchStatements: catchStatements
+      };
+    }
+    / TryToken __ tryExpression:Expression __ tryExpressionReturns:ReturnsDeclarations __ tryStatement: Statement __
+      catchStatements:(CatchStatements)*
+    {
+        return {
+         type:  "TryStatement",
+         tryExpressionReturns: tryExpressionReturns,
+         tryExpression: tryExpression,
+         tryStatement: tryStatement,
+         catchStatements: catchStatements
+      };
+    }
+
+CatchStatements
+  = head:CatchStatement tail:(__ CatchStatement)* {
+      return buildList(head, tail, 1);
+    }
+
+CatchStatement
+  = CatchToken __ "(" __ param:InformalParameterList __ ")" __ body:Block {
+      return {
+        type: "CatchClause",
+        param: param,
+        body: body
+      };
+    } /
+    CatchToken __ body:Block {
+      return {
+        type: "CatchClause",
+        body: body
+      };
+    } /
+ CatchToken __ "Error" __ "(" __ param:InformalParameterList __ ")" __ body:Block {
+      return {
+        type: "CatchClause",
+        param: param,
+        body: body
+      };
+    }
+    
 
 IfStatement
   = IfToken __ "(" __ test:Expression __ ")" __
@@ -1398,6 +1455,17 @@ EmitStatement
   {
     return {
       type: "EmitStatement",
+      expression: callexpr,
+      start: location().start.offset,
+      end: location().end.offset
+    };
+  }
+
+RevertStatement
+  = RevertToken __ callexpr:CallExpression EOS
+  {
+    return {
+      type: "RevertStatement",
       expression: callexpr,
       start: location().start.offset,
       end: location().end.offset
@@ -1587,6 +1655,20 @@ IsStatement
   }
 
 /* ----- A.5 Functions and Programs ----- */
+
+ErrorDeclaration
+  = ErrorToken __ fnname:FunctionName __ isanonymous:AnonymousToken? __ EOS
+  {
+    return {
+      type: "ErrorDeclaration",
+      name: fnname.name,
+      params: fnname.params,
+      is_anonymous: isanonymous != null,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
+
 
 EventDeclaration
   = EventToken __ fnname:FunctionName __ isanonymous:AnonymousToken? __ EOS
@@ -1874,6 +1956,7 @@ SourceUnit
   / InterfaceStatement
   / LibraryStatement
   / StructDeclaration
+  / ErrorDeclaration
 
 SourceElements
   = head:SourceElement tail:(__ SourceElement)* {
@@ -1885,6 +1968,7 @@ SourceElement
   / EnumDeclaration
   / EventDeclaration
   / StructDeclaration
+  / ErrorDeclaration
   / ModifierDeclaration
   / FunctionDeclaration
   / ConstructorDeclaration

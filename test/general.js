@@ -25,16 +25,57 @@ describe("Built Parser", function() {
 
 describe("Should parse pragma abicoder", function() {
     it("parses abi coder with v2", function() {
-       let all =  SolidityParser.parseFile("./test/doc_examples.sol", false);
-       let body = all.body;
-       for (let i = 0; i < body.length; i++) {
-            if(body[i].type === "AbiCoderPragmaStatement") {
-                assert.isTrue(body[i].version.name === "v2");
-            }
+        try{
+            let all =  SolidityParser.parseFile("./test/doc_examples.sol", false);
+            let body = all.body;
+            for (let i = 0; i < body.length; i++) {
+                    if(body[i].type === "AbiCoderPragmaStatement") {
+                        assert.isTrue(body[i].version.name === "v2");
+                    }
+                }
+        }catch(e) {
+            x = e;
         }
     });
 });
 
+
+describe("Should do try parse", function() {
+    it("shoud be able to parse try catch in multiple contracts", function() {
+        try{
+            let all =  SolidityParser.parseFile("./test/tryparse-contract.sol", false);
+            let body = all.body;
+        }catch(e) {
+            x = e;
+            throw e;
+        }
+    });
+});
+
+describe("Should do try parse generic", function() {
+    it("shoud be able to parse try catch ", function() {
+        try{
+            let all =  SolidityParser.parseFile("./test/tryparse-generic.sol", false);
+            let body = all.body;
+        }catch(e) {
+            x = e;
+            throw e;
+        }
+    });
+});
+
+
+describe("Should parse error declaration", function() {
+    it("shoud be able to parse error declarations ", function() {
+        try{
+            let all =  SolidityParser.parseFile("./test/parse-errordeclarations.sol", false);
+            let body = all.body;
+        }catch(e) {
+            x = e;
+            throw e;
+        }
+    });
+});
 
 describe("Should handle incomplete stametements", function() {
     it("should be able to get position of error", function() {
