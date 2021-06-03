@@ -85,8 +85,7 @@ describe("Should handle incomplete stametements", function() {
             for (let i = 0; i < body.length; i++) {
                     if(body[i].type === "ContractStatement") {
                         assert.isTrue(body[i].body[5].type === "ConstructorDeclaration");
-                        assert.isTrue(body[i].body[5].body.body[0].type === "IncompleteIdentifier");
-                        assert.isTrue(body[i].body[5].body.body[0].expression.name === "ow");
+                        assert.isTrue(body[i].body[5].body.body[0].type === "IncompleteStatement");
                     }
             } 
     });
@@ -136,7 +135,7 @@ describe("Parse comments", () => {
         const sourceCode = require("fs").readFileSync("./test/doc_examples.sol", "utf8");
         const comments = SolidityParser.parseComments(sourceCode);
 
-        const expectedCommLen = 60;
+        const expectedCommLen = 64;
 
         if (comments.length !== expectedCommLen) {
             throw new Error(`there should be ${expectedCommLen} comment objects`);

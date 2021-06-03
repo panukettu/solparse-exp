@@ -234,7 +234,10 @@ Keyword
   / ThrowToken
   / VarToken
   / WhileToken
-
+  / TryToken
+  / CatchToken
+  / EmitToken
+  
 Literal
   = BooleanLiteral
   / DenominationLiteral
@@ -1143,7 +1146,8 @@ Statements
     }
 
 Statement
-  = Block
+  =  
+  Block
   / VariableStatement
   / EmptyStatement
   / ExpressionStatement
@@ -1159,7 +1163,58 @@ Statement
   / UsingStatement
   / EmitStatement
   / RevertStatement
+  / IncompleteBlock
  
+  
+IncompleteBlock
+  = !( 
+  TryStatement
+  / Block 
+  / VariableStatement
+  / EmptyStatement
+  / ExpressionStatement
+  / PlaceholderStatement
+  / IfStatement
+  / CatchStatement
+  / IterationStatement
+  / InlineAssemblyStatement
+  / ContinueStatement
+  / BreakStatement
+  / ReturnStatement
+  / ThrowStatement
+  / UsingStatement
+  / EmitStatement
+  / RevertStatement
+ )  
+
+  __ body:EmitToken __ PrimaryExpression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* __ ?
+    {
+      return {
+        type: "IncompleteStatement",
+        body: optionalList(extractOptional(body, 0)),
+        start: location().start.offset,
+        end: location().end.offset
+      };
+    } /
+    __ body:ReturnToken __ PrimaryExpression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* __ ?
+    {
+      return {
+        type: "IncompleteStatement",
+        body: optionalList(extractOptional(body, 0)),
+        start: location().start.offset,
+        end: location().end.offset
+      };
+    }  /
+     __ body: PrimaryExpression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* __ ?
+    {
+      return {
+        type: "IncompleteStatement",
+        body: optionalList(extractOptional(body, 0)),
+        start: location().start.offset,
+        end: location().end.offset
+      };
+    } 
+  
 
 Block
   = "{" __ body:(StatementList __)? "}" {
@@ -1169,7 +1224,7 @@ Block
         start: location().start.offset,
         end: location().end.offset
       };
-    }
+    } 
 
 StatementList
   = head:Statement tail:(__ Statement)* { return buildList(head, tail, 1); }
@@ -1235,48 +1290,6 @@ Initialiser
 EmptyStatement
   = ";" { return { type: "EmptyStatement", start: location().start.offset, end: location().end.offset }; }
 
-IncompleteIdentifier
-   = !("{" / ContractToken / InterfaceToken / LibraryToken / StructToken / EnumToken
-  / Block
-  / VariableStatement
-  / EmptyStatement
-  / ExpressionStatement
-  / PlaceholderStatement
-  / IfStatement
-  / TryStatement
-  / IterationStatement
-  / InlineAssemblyStatement
-  / ContinueStatement
-  / BreakStatement
-  / ReturnStatement
-  / ThrowStatement
-  / UsingStatement
-  / EmitStatement )
-    expression:PrimaryExpression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* 
-   {
-      return {
-        type:  "IncompleteIdentifier",
-        expression: expression,
-        start: location().start.offset,
-        end: location().end.offset
-      };
-    }
-
-  IncompleteReturnStatement
-  = ReturnToken __ argument:Expression {
-      return { type: "IncompleteReturnStatement", argument: argument, start: location().start.offset, end: location().end.offset };
-    }
-
-  IncompleteEmitStatement
-  = EmitToken __ callexpr:Identifier
-  {
-    return {
-      type: "IncompleteEmitStatement",
-      expression: callexpr,
-      start: location().start.offset,
-      end: location().end.offset
-    };
-  }
 
 
 ExpressionStatement
@@ -1290,7 +1303,7 @@ ExpressionStatement
     } 
 
 TryStatement 
-  = TryToken __ tryExpression:Statement __ 
+  = TryToken __ tryExpression: Expression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* __ 
     tryStatement:Statement __
     catchStatements: (CatchStatements)*
     {
@@ -1300,8 +1313,8 @@ TryStatement
          tryStatement: tryStatement,
          catchStatements: catchStatements
       };
-    }
-    / TryToken __ tryExpression:Expression __ tryExpressionReturns:ReturnsDeclarations __ tryStatement: Statement __
+    } 
+    / TryToken __ tryExpression:Expression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* __ tryExpressionReturns:ReturnsDeclarations __ tryStatement: Statement __
       catchStatements:(CatchStatements)*
     {
         return {
@@ -1311,7 +1324,8 @@ TryStatement
          tryStatement: tryStatement,
          catchStatements: catchStatements
       };
-    }
+    } 
+    
 
 CatchStatements
   = head:CatchStatement tail:(__ CatchStatement)* {
