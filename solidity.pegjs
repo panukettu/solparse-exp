@@ -40,6 +40,11 @@
     MemberExpression: "object"
   };
 
+  String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.split(search).join(replacement);
+  };
+
   function filledArray(count, value) {
     var result = new Array(count), i;
 
@@ -291,13 +296,13 @@ DenominationLiteral
 
 DecimalLiteral
   = DecimalIntegerLiteral "." DecimalDigit* ExponentPart? {
-      return { type: "Literal", value: parseFloat(text()), start: location().start.offset, end: location().end.offset };
+      return { type: "Literal", value: parseFloat(text().replaceAll('_', '')), start: location().start.offset, end: location().end.offset };
     }
   / "." DecimalDigit+ ExponentPart? {
-      return { type: "Literal", value: parseFloat(text()), start: location().start.offset, end: location().end.offset };
+      return { type: "Literal", value: parseFloat(text().replaceAll('_', '')), start: location().start.offset, end: location().end.offset };
     }
   / DecimalIntegerLiteral ExponentPart? {
-      return { type: "Literal", value: parseFloat(text()), start: location().start.offset, end: location().end.offset };
+      return { type: "Literal", value: parseFloat(text().replaceAll('_', '')), start: location().start.offset, end: location().end.offset };
     }
 
 DecimalIntegerLiteral
@@ -305,7 +310,7 @@ DecimalIntegerLiteral
   / NonZeroDigit DecimalDigit*
 
 DecimalDigit
-  = [0-9]
+  = [0-9_]
 
 NonZeroDigit
   = [1-9]
@@ -1191,7 +1196,7 @@ IncompleteBlock
     {
       return {
         type: "IncompleteStatement",
-        body: optionalList(extractOptional(body, 0)),
+        body: text(),
         start: location().start.offset,
         end: location().end.offset
       };
@@ -1200,7 +1205,7 @@ IncompleteBlock
     {
       return {
         type: "IncompleteStatement",
-        body: optionalList(extractOptional(body, 0)),
+        body:  text(),
         start: location().start.offset,
         end: location().end.offset
       };
@@ -1209,7 +1214,7 @@ IncompleteBlock
     {
       return {
         type: "IncompleteStatement",
-        body: optionalList(extractOptional(body, 0)),
+        body: text(),
         start: location().start.offset,
         end: location().end.offset
       };

@@ -615,6 +615,10 @@ contract Ballot {
     });
 }
 
+contract NumbersWithUnderscorers {
+  int x = 10_000_000;
+}
+
 contract multilineReturn {
 /*
 Hi my name

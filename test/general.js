@@ -122,6 +122,19 @@ describe("Should parse abstract", function() {
     });
 });
 
+
+describe("Should parse numbers with underscores", function() {
+    it("parses contracts with underscores", function() {
+       let all =  SolidityParser.parseFile("./test/doc_examples.sol", false);
+       let body = all.body;
+       for (let i = 0; i < body.length; i++) {
+           if(body[i].type === "ContractStatement" && body[i].name ==="NumbersWithUnderscorers") {
+               assert.isTrue(body[i].body[0].value.value === 10000000);
+           }
+       }
+    });
+});
+
 describe("Parse comments", () => {
     function isAValidCommentToken(c, sc) {
         return (
