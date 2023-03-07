@@ -417,7 +417,7 @@ contract LetsHaveLotsOfKeywordsInStateVariablesInNoParticularOrderBecauseIsLotsO
 
 library GetCode {
     function at(address _addr) returns (bytes o_code) {
-        assembly {
+        assembly ("memory-safe") {
             if slt(x, 0) { x := sub(0, x) }
             // retrieve the size of the code, this needs assembly
             let size := extcodesize(_addr)

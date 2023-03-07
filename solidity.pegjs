@@ -1585,7 +1585,7 @@ IterationStatement
     }
 
 InlineAssemblyStatement
-  = 'assembly' __ body:InlineAssemblyBlock {
+  = 'assembly' __ '("memory-safe")'? __ body:InlineAssemblyBlock {
       return {
         type: "InlineAssemblyStatement",
         body:  body,
