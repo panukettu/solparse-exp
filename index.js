@@ -1,6 +1,6 @@
 "use strict";
 
-const PEG = require("pegjs");
+const PEG = require("peggy");
 const fs = require("fs");
 const path = require("path");
 

@@ -914,12 +914,14 @@ DeclarativeExpression
   }
 
 Mapping
-  = MappingToken __ "(" __ from:Type __ "=>" __ to:Type __ ")"
+  = MappingToken __ "(" __ from:Type __ idFrom:Identifier? __ "=>" __ to:Type __ idTo:Identifier? __")"
   {
     return {
      type: "MappingExpression",
      from: from,
+     fromName: idFrom != null ? idFrom.name : "",
      to: to,
+     toName: idTo != null ? idTo.name : "",
      start: location().start.offset,
      end: location().end.offset
    }
@@ -1319,7 +1321,7 @@ TryStatement
          catchStatements: catchStatements
       };
     } 
-    / TryToken __ tryExpression:Expression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* __ tryExpressionReturns:ReturnsDeclarations __ tryStatement: Statement __
+    / TryToken __ tryExpression:Expression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* __ tryExpressionReturns:ReturnsDeclarations __ tryStatement: Statement* __
       catchStatements:(CatchStatements)*
     {
         return {
@@ -1329,7 +1331,19 @@ TryStatement
          tryStatement: tryStatement,
          catchStatements: catchStatements
       };
-    } 
+    }/
+    TryToken __ tryExpression: Expression tail:(((".") / (  __ "=" __ ) / ( __ "=" __ NewToken __)) Identifier?)* __ 
+    tryStatement:Statement* __
+    catchStatements: (CatchStatements)*
+    {
+      return {
+         type:  "TryStatement",
+         tryExpression: tryExpression,
+         tryStatement: tryStatement,
+         catchStatements: catchStatements
+      };
+    }
+   
     
 
 CatchStatements

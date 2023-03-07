@@ -54,6 +54,7 @@ interface i {
 contract extends {}
 contract export {}
 
+
 abstract contract testAbstract {}
 
 contract c {
@@ -152,6 +153,7 @@ contract c {
   function setData(uint pos, uint value) internal { data[pos] = value; }
   function getData(uint pos) internal { return data[pos]; }
   mapping(uint => uint) data;
+  mapping(uint input => uint output) data1;
 }
 
 contract Sharer {
@@ -163,7 +165,7 @@ contract Sharer {
 }
 
 /// @dev Models a modifiable and iterable set of uint values.
-library IntegerSet
+library IntegerSet 
 {
   struct data
   {
@@ -641,7 +643,7 @@ contract Bar {
     
     function dell(function(int a, bool bcd) payable myFunc) internal {
         function(address) external returns (address)[3] chumma = foo;
-        function(uint, string) external internal pure  payable 	constant   view returns (address)    [] bax = bar;
+        function(uint, string) external internal pure  payable  constant   view returns (address)    [] bax = bar;
     }
 }
 
@@ -668,4 +670,18 @@ contract UsesNewConstructor {
       address         payable x;
     }
 }
+
+contract Test {
+    uint foo = 1;
+    function test() public {
+        foo += 1;
+        try this.test() {
+            // require(true);
+        }
+        catch {}
+    }
+}
+
+
+
 //end of file
