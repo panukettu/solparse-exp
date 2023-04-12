@@ -55,6 +55,7 @@ describe("Parser ERC20", function() {
         }
         catch(error){
             let x = error;
+            throw x;
         }
     });
 });
@@ -93,6 +94,7 @@ describe("Should parse pragma abicoder", function() {
                 }
         }catch(e) {
             x = e;
+            throw x;
         }
     });
 });

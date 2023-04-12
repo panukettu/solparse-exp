@@ -1,13 +1,15 @@
-# Solparse
+# Solparse Exp
 
 Pegjs-based Parser for the Solidity Programming language.
 
-It was originally a fork of [Consensys' solidity-parser](https://github.com/ConsenSys/solidity-parser) by Tim Coulter. @cgewecke, @duaraghav8 and @federicobond are co-authors.
+This is a fork of [duaraghav8 Solparse](https://github.com/duaraghav8/solparse)which was originally a fork of [Consensys' solidity-parser](https://github.com/ConsenSys/solidity-parser) by Tim Coulter. @cgewecke, @duaraghav8 and @federicobond are co-authors.
 
 ## Note
-Solparse is primarily meant for [Ethlint](https://github.com/duaraghav8/Ethlint). Because its sole purpose is to make life easier for the linter, we do not guarantee that there won't be any breaking changes, although we work hard to keep it friendly.
+This version was created primarily to work with https://github.com/juanfranblanco/vscode-solidity, and added IncompleteBlock to help on not completed statements, but over the years it continues to be updated, and provides another solidity parser to help the ecosystem.
 
-If you use solparse in your production systems, use it as a fixed dependency.
+If you are not interested in "IncompleteBlock" it can be removed or commented out for your own needs. 
+
+Fixes welcome :)
 
 ### License
 
