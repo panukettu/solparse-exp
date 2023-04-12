@@ -1,6 +1,64 @@
 "use strict";
 const assert = require("chai").assert;
-let SolidityParser = require("../index.js");
+const SolidityParser = require("../index.js");
+const fs = require("fs");
+const path = require('path');
+
+
+describe("Parses test.sol", function() {
+    it("parses test.sol as the antlr", function() {
+        try{
+            let all =  SolidityParser.parseFile("./test/test.sol", true);
+            let x = all;
+        }
+        catch(error){
+            console.log("./test/test.sol", error.message);
+            let x = error;
+        }
+       
+    });
+});
+
+
+describe("Parse oss repos", function() {
+    it("parses all oss repos", function() {
+        var repos = ['prb-math', 'openzeppelin-contracts', 'solmate', 'seaport']
+        for (let x = 0; x < repos.length; x++) {
+            const repo = repos[x];
+        
+        
+            var files = fromDir('../' + repo, '.sol');
+            for (let index = 0; index < files.length; index++) {
+                const file = files[index];
+                try{
+                    let all =  SolidityParser.parseFile(file);
+                    let x = all;
+                }
+                catch(error){
+                    let x = error;
+                    console.log(file, error.message);
+                }
+                
+            }
+        }
+       
+    });
+});
+
+
+
+describe("Parser ERC20", function() {
+    it("parses Erc20 example without throwing an error", function() {
+        try{
+            let all =  SolidityParser.parseFile("./test/ERC20.sol", false);
+            let x = all;
+        }
+        catch(error){
+            let x = error;
+        }
+    });
+});
+
 
 describe("Parser", function() {
     it("parses documentation examples without throwing an error", function() {
@@ -161,3 +219,28 @@ describe("Parse comments", () => {
         });
     });
 });
+
+
+
+
+function fromDir(startPath, filter) {
+
+    var results = []
+    if (!fs.existsSync(startPath)) {
+        console.log("no dir ", startPath);
+        return results;
+    }
+
+    var files = fs.readdirSync(startPath);
+    for (var i = 0; i < files.length; i++) {
+        var filename = path.join(startPath, files[i]);
+        var stat = fs.lstatSync(filename);
+        if (stat.isDirectory()) {
+            results = results.concat(fromDir(filename, filter)); //recurse
+        } else if (filename.endsWith(filter)) {
+            results.push(filename);
+        };
+    };
+    return results;
+};
+

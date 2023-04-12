@@ -1,8 +1,8 @@
 /*
- * Solidity Grammar, based on Javascript grammar.
+ * Solid.=ity Grammar, based on Javascript grammar.
  * The following comment is from that grammar:
  * ==================
- *
+ *.=.=
  * Based on grammar from ECMA-262, 5.1 Edition [1]. Generated parser builds a
  * syntax tree compatible with Mozilla SpiderMonkey Parser API [2]. Properties
  * and node types reflecting features not present in ECMA-262 are not included.
@@ -240,6 +240,7 @@ Keyword
   / VarToken
   / WhileToken
   / TryToken
+  / UnicodeToken
   / CatchToken
   / EmitToken
   
@@ -247,9 +248,12 @@ Literal
   = BooleanLiteral
   / DenominationLiteral
   / NumericLiteral
+  / HexStringLiteralList
   / HexStringLiteral
+  / StringLiteralList
   / StringLiteral
   / VersionLiteral
+  / UnicodeStringLiteral
 
 BooleanLiteral
   = TrueToken  { return { type: "Literal", value: true, start: location().start.offset, end: location().end.offset }; }
@@ -271,6 +275,7 @@ Denomination
   = token:(WeiToken
   / SzaboToken
   / FinneyToken
+  / GweiToken
   / EtherToken
   / SecondsToken
   / MinutesToken
@@ -281,6 +286,37 @@ Denomination
   {
     return token[0];
   }
+
+
+ElementaryTypeName
+  =  type:('address' / 'bool' / 'string' / 'var' / Int / Uint /  Byte / 'byte' / Fixed / Ufixed) {
+     return type;
+  }
+
+Int =
+    'int104' / 'int112' / 'int120' / 'int128' / 'int136' / 'int144' / 'int152' / 'int160' / 'int168' / 'int176' / 'int184' / 'int192' / 'int200' / 'int208' / 'int216' / 'int224' / 'int232' / 'int240' / 'int248' / 'int256' / 'int16' / 'int24' / 'int32' / 'int40' / 'int48' / 'int56' / 'int64' / 'int72' / 'int80' / 'int88' / 'int96' / 'int8' /'int'
+      
+
+Uint
+  =  'uint104' / 'uint112' / 'uint120' / 'uint128' / 'uint136' / 'uint144' / 'uint152' / 'uint160' / 'uint168' / 'uint176' / 'uint184' / 'uint192' / 'uint200' / 'uint208' / 'uint216' / 'uint224' / 'uint232' / 'uint240' / 'uint248'  / 'uint256' / 'uint16' / 'uint24' / 'uint32' / 'uint40' / 'uint48' / 'uint56' / 'uint64' / 'uint72' / 'uint80' / 'uint88' / 'uint96' / 'uint8' /'uint' 
+    
+     
+
+Byte =
+   'bytes10' / 'bytes11' / 'bytes12' / 'bytes13' / 'bytes14' / 'bytes15' / 'bytes16' / 'bytes17' / 'bytes18' / 'bytes19' / 'bytes20' / 'bytes21' / 'bytes22' / 'bytes23' / 'bytes24' / 'bytes25' / 'bytes26' / 'bytes27' / 'bytes28' / 'bytes29' / 'bytes30' / 'bytes31' / 'bytes32' / 'bytes1' / 'bytes2' / 'bytes3' / 'bytes4' / 'bytes5' / 'bytes6' / 'bytes7' / 'bytes8' / 'bytes9' / 'bytes' 
+  
+  
+
+Fixed
+  = typeName: ( 'fixed' [0-9]+ 'x' [0-9]+ ) / 'fixed'  {
+    return typeName;
+  }
+
+Ufixed
+  = typeName: ( 'ufixed' [0-9]+ 'x' [0-9]+ ) / 'ufixed'  {
+    return typeName;
+  }
+
 
 DenominationLiteral
   = literal:NumericLiteral __ denomination:Denomination
@@ -330,7 +366,7 @@ HexIntegerLiteral
      }
 
 HexDigit
-  = [0-9a-f]i
+  = [0-9a-f_]i
 
 StringLiteral "string"
   = '"' chars:DoubleStringCharacter* '"' {
@@ -338,6 +374,12 @@ StringLiteral "string"
     }
   / "'" chars:SingleStringCharacter* "'" {
       return { type: "Literal", value: chars.join(""), start: location().start.offset, end: location().end.offset };
+    }
+
+
+StringLiteralList 
+  = head:(StringLiteral/UnicodeStringLiteral) __ tail:( __ StringLiteral/UnicodeStringLiteral)* {
+      return { type:"Literal", value: buildList(head, tail, 1), start: location().start.offset, end: location().end.offset }; 
     }
 
 HexStringLiteral
@@ -349,6 +391,22 @@ HexStringLiteral
       end: location().end.offset
     };
   }
+
+  HexStringLiteralList 
+  = head:(HexStringLiteral) __ tail:( __ HexStringLiteral)* {
+      return { type:"HexLiteral", value: buildList(head, tail, 1), start: location().start.offset, end: location().end.offset }; 
+    }
+
+UnicodeStringLiteral
+  = UnicodeToken val:StringLiteral {
+    return {
+      type: "UnicodeStringLiteral",
+      value: val,
+      start: location().start.offset,
+      end: location().end.offset
+    };
+  }
+
 
 DoubleStringCharacter
   = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
@@ -404,7 +462,7 @@ UnicodeEscapeSequence
     }
 
 VersionLiteral
-  = operator:(RelationalOperator / EqualityPragmaOperator / BitwiseXOROperator / Tilde)? __ ("v")? major:DecimalIntegerLiteral minor:("." DecimalIntegerLiteral)? patch:("." DecimalIntegerLiteral)? {
+  = operator:(RelationalOperator / EqualityPragmaOperator / BitwiseXOROperator / Tilde )? __ ("v")? major:(DecimalIntegerLiteral / "*") minor:("." DecimalIntegerLiteral)? patch:("." DecimalIntegerLiteral)? {
     if (patch === null) {
       patch = 0;
     } else {
@@ -416,7 +474,7 @@ VersionLiteral
     } else {
       minor = minor[1];
     }
-
+    if(operator == null) operator = {}
     return {
       type: "VersionLiteral",
       operator: operator,
@@ -520,7 +578,9 @@ FinneyToken     = "finney"     !IdentifierPart
 ForToken        = "for"        !IdentifierPart
 FromToken       = "from"       !IdentifierPart
 FunctionToken   = "function"   !IdentifierPart
+GweiToken       = "gwei"       !IdentifierPart 
 GetToken        = "get"        !IdentifierPart
+GlobalToken     = "global"     !IdentifierPart
 HexToken        = "hex"        !IdentifierPart
 HoursToken      = "hours"      !IdentifierPart
 IfToken         = "if"         !IdentifierPart
@@ -553,6 +613,9 @@ SzaboToken      = "szabo"      !IdentifierPart
 ThisToken       = "this"       !IdentifierPart
 ThrowToken      = "throw"      !IdentifierPart
 TrueToken       = "true"       !IdentifierPart
+TypeToken       = "type"       !IdentifierPart 
+UncheckedToken  = "unchecked"  !IdentifierPart
+UnicodeToken    = "unicode"    !IdentifierPart
 UsingToken      = "using"      !IdentifierPart
 VarToken        = "var"        !IdentifierPart
 WeeksToken      = "weeks"      !IdentifierPart
@@ -562,7 +625,7 @@ YearsToken      = "years"      !IdentifierPart
 
 /* Skipped */
 
-__
+__ 
   = (WhiteSpace / LineTerminatorSequence / Comment)*
 
 _
@@ -592,6 +655,7 @@ PrimaryExpression
         Need to modify the location here so the position takes into account the "(" & ")".
         Else "(a, b)" (for eg) results in incorrect position.
       */
+      if(expression == null) expression = {};
       expression.start = location().start.offset;
       expression.end = location().end.offset;
 
@@ -622,7 +686,9 @@ ArrayLiteral
         start: location().start.offset,
         end: location().end.offset
       };
-    }
+     } 
+      
+   
 
 ElementList
   = head:(
@@ -665,6 +731,15 @@ MemberExpression
       / __ "." __ property:IdentifierName {
           return { property: property, computed: false, start: location().start.offset, end: location().end.offset };
         }
+      / 
+       "[" __ rangeStart:Expression __ ":" __ rangeFinish:Expression "]" {
+          return {
+            property: [rangeStart, rangeFinish],
+            computed: false,
+            start: location().start.offset,
+            end: location().end.offset
+          };
+      }
     )*
     {
       return buildTree(head, tail, function(result, element) {
@@ -713,6 +788,15 @@ CallExpression
             end: location().end.offset
           };
         }
+       / 
+       "[" __ rangeStart:Expression __ ":" __ rangeFinish:Expression "]" {
+          return {
+            property: [rangeStart, rangeFinish],
+            computed: false,
+            start: location().start.offset,
+            end: location().end.offset
+          };
+      }
     )*
     {
       return buildTree(head, tail, function(result, element) {
@@ -899,6 +983,18 @@ StateVariableDeclaration
       end: location().end.offset
     }
   }
+
+FileLevelConstant
+ = type:Type __ ConstantToken  __ id:Identifier __ "=" __ expression:Expression __ EOS {
+    return {
+      type: "FileLevelConstant",
+      name: id.name,
+      literal: type, 
+      expression: expression,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+ }
 
 DeclarativeExpression
   = type:Type __ storage:StorageLocationSpecifier? __ id:Identifier 
@@ -1122,6 +1218,25 @@ AssignmentOperator
   / "^="
   / "|="
 
+
+UserDefinableOperator 
+  = "<=" 
+  / ">="
+  / "==" 
+  / "!=" 
+  / "|" 
+  / "&" 
+  / "^" 
+  / "~" 
+  / "+" 
+  / "-" 
+  / "*" 
+  / "/" 
+  / "%" 
+  / "<" 
+  / ">" ;
+  
+
 Expression
   = head:AssignmentExpression? tail:(__ "," __ AssignmentExpression?)* {
       if (tail.length < 1) {
@@ -1155,6 +1270,7 @@ Statements
 Statement
   =  
   Block
+  / UncheckedStatement
   / VariableStatement
   / EmptyStatement
   / ExpressionStatement
@@ -1170,7 +1286,7 @@ Statement
   / UsingStatement
   / EmitStatement
   / RevertStatement
-  / IncompleteBlock
+  / IncompleteBlock  //Remove if we don't want incomplete matches
  
   
 IncompleteBlock
@@ -1221,7 +1337,6 @@ IncompleteBlock
         end: location().end.offset
       };
     } 
-  
 
 Block
   = "{" __ body:(StatementList __)? "}" {
@@ -1402,11 +1517,19 @@ IfStatement
     }
 
 PragmaStatement
-  = PragmaToken __ SolidityToken __ start_version:VersionLiteral __ end_version:(VersionLiteral?) EOS {
+  = PragmaToken __ SolidityToken __ start_version:VersionLiteral __  end_version:(VersionLiteral?) EOS {
     return {
       type: "PragmaStatement",
       start_version: start_version,
       end_version: end_version,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
+  / PragmaToken __ SolidityToken __ head:VersionLiteral __ tail:(__"||"__ VersionLiteral?)* EOS {
+    return {
+      type: "PragmaStatement",
+      versions: buildList(head, tail, 3),
       start: location().start.offset,
       end: location().end.offset
     }
@@ -1461,26 +1584,94 @@ ImportStatement
     }
   }
 
+UsingStatementOperator =
+  library:Type __ AsToken __ operator:UserDefinableOperator __
+  {
+    return {
+      type: "UsingStatementOperator",
+      library: library,
+      for: operator,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
+  
+
+UsingStatementOperators =
+  UsingToken __ "{" __ head:UsingStatementOperator __  tail:( __ "," __ UsingStatementOperator)*__"}" __ ForToken __ type:Type __ global:(GlobalToken)?__ EOS
+  {
+    return {
+      type: "UsingStatementOperator",
+      blockUsing: true,
+      libraries: buildList(head, tail, 3),
+      global: global != null,
+      for: type,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }  
+
 UsingStatement
-  = UsingToken __ library:Identifier __ ForToken __ type:Type __ EOS
+  = 
+   UsingStatementOperators
+  / UsingToken __ library:Type __ ForToken __ type:Type __ global:(GlobalToken)? __ EOS
   {
     return {
       type: "UsingStatement",
-      library: library.name,
+      library: library,
+      for: type,
+      global: global != null,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
+  / UsingToken __ library:Type __ ForToken __ "*" __ global:(GlobalToken)?__ EOS
+  {
+    return {
+      type: "UsingStatement",
+      library: library,
+      global: global != null,
+      for: "*",
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
+  / UsingToken __ "{" __ head:(Type)* __  tail:( __ "," __ Type)*__"}" __ ForToken __ "*" __ global:(GlobalToken)?__ EOS
+  {
+    return {
+      type: "UsingStatement",
+      blockUsing: true,
+      library : head,
+      libraries: buildList(head, tail, 3),
+      global: global != null,
+      for: "*",
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
+  / UsingToken __ "{" __ head:(Type)* __  tail:( __ "," __ Type)*__"}" __ ForToken __ type:Type __ global:(GlobalToken)?__ EOS
+  {
+    return {
+      type: "UsingStatement",
+      blockUsing: true,
+      library : head,
+      libraries: buildList(head, tail, 3),
+      global: global != null,
       for: type,
       start: location().start.offset,
       end: location().end.offset
     }
   }
-  / UsingToken __ library:Identifier __ ForToken __ "*" __ EOS
-  {
+  
+
+UncheckedStatement
+  = UncheckedToken __ body:Block {
     return {
-      type: "UsingStatement",
-      library: library.name,
-      for: "*",
+      type: "UncheckedStatement",
+      body: body,
       start: location().start.offset,
       end: location().end.offset
-    }
+    };
   }
 
 EmitStatement
@@ -1584,15 +1775,7 @@ IterationStatement
       };
     }
 
-InlineAssemblyStatement
-  = 'assembly' __ '("memory-safe")'? __ body:InlineAssemblyBlock {
-      return {
-        type: "InlineAssemblyStatement",
-        body:  body,
-        start: location().start.offset,
-        end: location().end.offset
-      };
-  }
+
 
 PlaceholderStatement
   = "_" (__ EOS)? {
@@ -1702,6 +1885,18 @@ ErrorDeclaration
     }
   }
 
+TypeDeclaration
+  = TypeToken __ id:Identifier __ IsToken  __ type:ElementaryTypeName __ EOS
+  {
+    return {
+      type: "TypeDeclaration",
+      name: id.name,
+      isType: type,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
+
 
 EventDeclaration
   = EventToken __ fnname:FunctionName __ isanonymous:AnonymousToken? __ EOS
@@ -1783,10 +1978,23 @@ FallbackDeclaration
         start: location().start.offset,
         end: location().end.offset
       };
+    } /
+    FallbackToken __ fnname:FunctionName __ args:ModifierArgumentList? __ returns:ReturnsDeclarations __ body:FunctionBody
+    {
+      return {
+        type: "FallbackDeclaration",
+        name: fnname.name,
+        modifiers: args,
+        returnParams: returns,
+        body: body,
+        start: location().start.offset,
+        end: location().end.offset
+      };
     }
 
+//TODO ReceiveTypeModifiers
 ReceiveDeclaration
-  = ReceiveToken __ fnname:FunctionName __ args:ModifierArgumentList? __ body:FunctionBody
+  = ReceiveToken __ fnname:FunctionName __ args:ModifierArgumentList? __ functionModifiers:FunctionTypeModifierList? __ body:(FunctionBody / EOS)
     {
       return {
         type: "ReceiveDeclaration",
@@ -1795,7 +2003,9 @@ ReceiveDeclaration
         start: location().start.offset,
         end: location().end.offset
       };
-    }
+    } 
+    
+
 
 
 ReturnsDeclaration
@@ -1943,6 +2153,17 @@ EnumDeclaration
       end: location().end.offset
     }
   }
+  /
+  EnumToken __ id:Identifier __ "{" __ "}"
+  {
+    return {
+      type: "EnumDeclaration",
+      name: id.name,
+      members: null,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
 
 StructDeclaration
   = StructToken __ id:Identifier __ "{" __ body:DeclarativeExpressionList? __ "}"
@@ -1983,13 +2204,19 @@ SourceUnits
     }
 
 SourceUnit
-  = PragmaStatement
-  / ImportStatement
-  / ContractStatement
-  / InterfaceStatement
-  / LibraryStatement
+  = PragmaStatement //pragma
+  / ImportStatement //import
+  / ContractStatement //contract
+  / InterfaceStatement //interface 
+  / LibraryStatement  //library
+  / EnumDeclaration
   / StructDeclaration
+  / FunctionDeclaration
+  / FileLevelConstant
+  / TypeDeclaration
   / ErrorDeclaration
+  / UsingStatement
+  
 
 SourceElements
   = head:SourceElement tail:(__ SourceElement)* {
@@ -2008,6 +2235,18 @@ SourceElement
   / FallbackDeclaration
   / ReceiveDeclaration
   / UsingStatement
+  / TypeDeclaration
+  
+ InlineAssemblyStatement
+  = 'assembly' __ assemblyType:StringLiteral? __'("memory-safe")'? __ body:InlineAssemblyBlock {
+      return {
+        type: "InlineAssemblyStatement",
+        assemblyType:assemblyType,
+        body:  body,
+        start: location().start.offset,
+        end: location().end.offset
+      };
+  }
 
 InlineAssemblyBlock
   = '{' __ items:(AssemblyItem __)* __ '}' {
@@ -2020,32 +2259,46 @@ InlineAssemblyBlock
   }
 
 AssemblyItem
-  = FunctionalAssemblyInstruction
-  / InlineAssemblyBlock
-  / AssemblyFunctionDefinition
+  = 
+   InlineAssemblyBlock
   / AssemblyLocalBinding
   / AssemblyAssignment
+  / AssemblyStackAssignment
+  / AssemblyCallExpression
+  / AssemblyFunctionDefinition
   / AssemblyLabel
   / AssemblyIf
   / AssemblyFor
+  / BreakToken
+  / ContinueToken
+  / BooleanLiteral
   / NumericLiteral
   / StringLiteral
   / HexStringLiteral
+  / AssemblyMemberExpression
   / Identifier
+  
 
 AssemblyExpression
-  = FunctionalAssemblyInstruction
-  / ElementaryAssemblyOperation
-
+  =  AssemblyCallExpression  //use this order to avoid issues
+    / AssemblyMemberExpression
+    / ElementaryAssemblyOperation
+  
 ElementaryAssemblyOperation
-  = NumericLiteral
+  = BooleanLiteral
+  / NumericLiteral
   / StringLiteral
   / Identifier
 
+AssemblyMemberExpression
+ = head: Identifier __ body:(__"."__ Identifier)* {
+      return head;
+ }
+
 AssemblyIdentifierList
-  = head:Identifier tail:(__ ',' __ Identifier)* {
-    return buildList(head, tail, 3);
-  }
+    =  head:AssemblyExpression tail:(__ ',' __ AssemblyExpression)* {
+         return buildList(head, tail, 3);
+  }  
 
 AssemblyFunctionDefinition
   = FunctionToken __ id:Identifier __ '(' __ params:AssemblyIdentifierList? __ ')' __ returns:('->' __ AssemblyIdentifierList __)? body:InlineAssemblyBlock {
@@ -2061,7 +2314,8 @@ AssemblyFunctionDefinition
   }
 
 AssemblyLocalBinding
-  = 'let' __ names:AssemblyIdentifierList expression:(__ ':=' __ AssemblyExpression)? {
+   = 
+  'let' __ names:AssemblyIdentifierList expression:(__ ':=' __ (AssemblyExpression))? {
     if (expression != null) {
       expression = expression[3];
     }
@@ -2073,12 +2327,24 @@ AssemblyLocalBinding
       start: location().start.offset,
       end: location().end.offset
     }
-  }
+  } 
+  
 
 AssemblyAssignment
-  = names:AssemblyIdentifierList __ ':=' __ expression:AssemblyExpression {
+  = names:AssemblyIdentifierList __ ':=' __ expression:(AssemblyExpression) {
     return {
       type: "AssemblyAssignment",
+      names: names,
+      expression: expression,
+      start: location().start.offset,
+      end: location().end.offset
+    }
+  }
+  
+AssemblyStackAssignment
+  = names:AssemblyExpression __ '=:' __ expression:(AssemblyExpression) {
+    return {
+      type: "AssemblyStackAssignment",
       names: names,
       expression: expression,
       start: location().start.offset,
@@ -2096,10 +2362,10 @@ ReturnOpCode
     }
   }
 
-FunctionalAssemblyInstruction
-  = name:(Identifier / ReturnOpCode) __ '(' __ head:AssemblyItem? __ tail:( ',' __ AssemblyItem )* __ ')' {
+AssemblyCallExpression
+  = name:( Identifier / ReturnOpCode) __ '(' __ head:AssemblyExpression? __ tail:( ',' __ AssemblyExpression )* __ ')' {
     return {
-      type: "FunctionalAssemblyInstruction",
+      type: "AssemblyCall",
       name: name,
       arguments: buildList(head, tail, 2),
       start: location().start.offset,
@@ -2130,9 +2396,9 @@ AssemblyIf
 
 AssemblyFor
   = ForToken __
-  init:(InlineAssemblyBlock / FunctionalAssemblyInstruction) __
-  test:FunctionalAssemblyInstruction __
-  update:(InlineAssemblyBlock / FunctionalAssemblyInstruction) __
+  init:(InlineAssemblyBlock / AssemblyCallExpression) __
+  test:(AssemblyCallExpression/Identifier/NumericLiteral) __
+  update:(InlineAssemblyBlock / AssemblyCallExpression) __
   body:InlineAssemblyBlock
   {
     return {
@@ -2144,4 +2410,6 @@ AssemblyFor
       start: location().start.offset,
       end: location().end.offset
     };
-  }
+  } 
+
+  
