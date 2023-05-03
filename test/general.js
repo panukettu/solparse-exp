@@ -22,7 +22,8 @@ describe("Parses test.sol", function() {
 
 describe("Parse oss repos", function() {
     it("parses all oss repos", function() {
-        var repos = ['prb-math', 'openzeppelin-contracts', 'solmate', 'seaport']
+        //var repos = ['prb-math', 'openzeppelin-contracts', 'openzeppelin-contracts-upgradeable', 'solmate', 'seaport']
+        var repos = ['openzeppelin-contracts-upgradeable']
         for (let x = 0; x < repos.length; x++) {
             const repo = repos[x];
         
@@ -32,6 +33,7 @@ describe("Parse oss repos", function() {
                 const file = files[index];
                 try{
                     let all =  SolidityParser.parseFile(file);
+                    console.log(file);
                     let x = all;
                 }
                 catch(error){

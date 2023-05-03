@@ -2222,18 +2222,7 @@ SourceUnits
     }
 
 SourceUnit
-  = PragmaStatement //pragma
-  / ImportStatement //import
-  / ContractStatement //contract
-  / InterfaceStatement //interface 
-  / LibraryStatement  //library
-  / EnumDeclaration
-  / StructDeclaration
-  / FunctionDeclaration
-  / FileLevelConstant
-  / TypeDeclaration
-  / ErrorDeclaration
-  / UsingStatement
+  = StatementList
   
 
 SourceElements
