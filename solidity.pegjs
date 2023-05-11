@@ -647,6 +647,7 @@ Comma
 
 PrimaryExpression
   = ThisToken { return { type: "ThisExpression", start: location().start.offset, end: location().end.offset }; }
+  / SuperToken { return { type: "SuperExpression", start: location().start.offset, end: location().end.offset }; }
   / Identifier
   / Literal
   / ArrayLiteral
@@ -991,6 +992,7 @@ StateVariableDeclaration
     return {
       type: "StateVariableDeclaration",
       name: id.name,
+      id : id,
       literal: type,
       visibility: specifiers? specifiers.visibility : null,
       is_constant: specifiers? specifiers.isconstant : false,
@@ -1007,6 +1009,7 @@ FileLevelConstant
     return {
       type: "FileLevelConstant",
       name: id.name,
+      id : id,
       literal: type, 
       expression: expression,
       start: location().start.offset,
@@ -1020,6 +1023,7 @@ DeclarativeExpression
     return {
       type: "DeclarativeExpression",
       name: id.name,
+      id : id,
       literal: type, 
       storage_location: storage ? storage[0]: null,
       start: location().start.offset,
@@ -1840,6 +1844,7 @@ ContractStatement
     return {
       type: "ContractStatement",
       name: id.name,
+      id : id,
       is: is != null ? is.names : [],
       body: optionalList (body),
       is_abstract: abstract != null,
@@ -1855,6 +1860,7 @@ InterfaceStatement
     return {
       type: "InterfaceStatement",
       name: id.name,
+      id : id,
       is: is != null ? is.names : [],
       body: optionalList (body),
       start: location().start.offset,
@@ -1870,6 +1876,7 @@ LibraryStatement
     return {
       type: "LibraryStatement",
       name: id.name,
+      id : id,
       is: is != null ? is.names : [],
       body: optionalList (body),
       start: location().start.offset,
@@ -1909,6 +1916,7 @@ TypeDeclaration
     return {
       type: "TypeDeclaration",
       name: id.name,
+      id : id,
       isType: type,
       start: location().start.offset,
       end: location().end.offset
@@ -1949,6 +1957,7 @@ FunctionDeclaration
       return {
         type: "FunctionDeclaration",
         name: fnname.name,
+        id: fnname,
         params: fnname.params,
         modifiers: args,
         returnParams: returns,
@@ -1963,6 +1972,7 @@ FunctionDeclaration
       return {
         type: "FunctionDeclaration",
         name: fnname.name,
+        id: fnname,
         params: fnname.params,
         modifiers: args,
         returnParams: returns,
@@ -2053,6 +2063,7 @@ FunctionName
   {
     return {
       type: "FunctionName",
+      id : id,
       name: id != null ? id.name : null,
       params: params != null ? params[2] : [],
       start: location().start.offset,
@@ -2166,6 +2177,7 @@ EnumDeclaration
     return {
       type: "EnumDeclaration",
       name: id.name,
+      id : id,
       members: buildList(head, tail, 3).map(function(i) {return i.name;}),
       start: location().start.offset,
       end: location().end.offset
@@ -2177,6 +2189,7 @@ EnumDeclaration
     return {
       type: "EnumDeclaration",
       name: id.name,
+      id : id,
       members: null,
       start: location().start.offset,
       end: location().end.offset
@@ -2189,6 +2202,7 @@ StructDeclaration
     return {
       type: "StructDeclaration",
       name: id.name,
+      id : id,
       body: body != null ? body.declarations : null,
       start: location().start.offset,
       end: location().end.offset
@@ -2323,6 +2337,7 @@ AssemblyFunctionDefinition
     return {
       type: "AssemblyFunctionDefinition",
       name: id.name,
+      id : id,
       params: params != null ? params : [],
       returnParams: returns != null ? returns[2] : [],
       body: body,
