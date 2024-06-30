@@ -1498,7 +1498,14 @@ CatchStatement
         body: body
       };
     } /
- CatchToken __ "Error" __ "(" __ param:InformalParameterList __ ")" __ body:Block {
+    CatchToken __ "Error" __ "(" __ param:InformalParameterList __ ")" __ body:Block {
+      return {
+        type: "CatchClause",
+        param: param,
+        body: body
+      };
+    } /
+    CatchToken __ "Panic" __ "(" __ param:InformalParameterList __ ")" __ body:Block {
       return {
         type: "CatchClause",
         param: param,

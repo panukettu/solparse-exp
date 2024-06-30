@@ -3,7 +3,7 @@
 "use strict";
 
 /* eslint no-console: 0 */
-
+// (^//|/?//\s|/\*)
 let argv = require("yargs").argv;
 let SolidityParser = require("./index.js");
 

@@ -602,7 +602,7 @@ contract Ballot {
     Voter you = Voter(1, true);
 
     /**/
-    /* hello //world hoa re */
+    /* hello //world re */
 
     Voter me = Voter({
         weight: 2,
@@ -679,6 +679,11 @@ contract Test {
             // require(true);
         }
         catch {}
+
+        try this.test() {
+        } catch Panic(uint256 code) {
+            revert Errors.Panicked(code);
+        } catch {}
     }
 }
 
