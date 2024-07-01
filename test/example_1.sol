@@ -41,7 +41,7 @@ contract BatchFacet is IBatchFacet, Modifiers {
             revert();
         } catch Error(string memory reason) {
             revert(reason);
-        } catch Asd(uint256 code) {
+        } catch Panic(uint256 code) {
             revert Errors.Panicked(code);
         } catch (bytes memory errorData) {
             if (msg.value != 0) payable(msg.sender).transfer(msg.value);
