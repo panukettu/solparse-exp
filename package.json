@@ -1,6 +1,6 @@
 {
   "name": "@pkxp/solparse-exp-jb",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "PEG.js Solidity parser for Javascript, experimental work (jb) to support latest solidity features and work with vscode solidity, this should NOT be merged with the main repo as it includes support for incomplete statements",
   "main": "index.js",
   "scripts": {
