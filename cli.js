@@ -17,7 +17,6 @@ try {
     } else {
         result = SolidityParser.parseFile(argv.f || argv.file || argv._[0]);
     }
-    console.log(JSON.stringify(result, null, 2));
 
 } catch (e) {
     console.error(e.message);

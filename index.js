@@ -61,7 +61,6 @@ module.exports = {
       result = parser.parse(source);
     } catch (e) {
       if (e instanceof parser.SyntaxError) {
-        console.log(JSON.stringify(e));
         e.message += `\n      -> Line: ${e.location.start.line}, Column: ${
           e.location.start.column
         }\n.     -> ${source
