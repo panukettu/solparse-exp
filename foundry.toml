@@ -1,1 +1,6 @@
-[default]
+[profile.default]
+src = "test"
+script = "scripts"
+test = "test"
+
+libs = ["lib"]

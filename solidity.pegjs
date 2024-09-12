@@ -594,7 +594,6 @@ InternalToken   = "internal"   !IdentifierPart
 LibraryToken    = "library"    !IdentifierPart
 MappingToken    = "mapping"    !IdentifierPart
 MemoryToken     = "memory"     !IdentifierPart
-TransientToken     = "transient"     !IdentifierPart
 MinutesToken    = "minutes"    !IdentifierPart
 ModifierToken   = "modifier"   !IdentifierPart
 NewToken        = "new"        !IdentifierPart
@@ -608,6 +607,7 @@ SecondsToken    = "seconds"    !IdentifierPart
 SetToken        = "set"        !IdentifierPart
 SolidityToken   = "solidity"   !IdentifierPart
 StorageToken    = "storage"    !IdentifierPart
+TransientToken  = "transient"  !IdentifierPart
 StructToken     = "struct"     !IdentifierPart
 SuperToken      = "super"      !IdentifierPart
 SzaboToken      = "szabo"      !IdentifierPart
@@ -940,7 +940,7 @@ StateVariableSpecifiers
     }
    } 
    /
-  constant:(ConstantToken/ImmutableToken) __? override:(OverrideToken)? __? visibility:(VisibilitySpecifier)? __ {
+  constant:(ConstantToken/ImmutableToken) __? transient:(TransientToken)? __? override:(OverrideToken)? __? visibility:(VisibilitySpecifier)? __ {
     return {
       visibility: visibility? visibility[0]: null,
       isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
@@ -957,7 +957,7 @@ StateVariableSpecifiers
       isoverride: override?  true: false
     }
    } /
-   override:(OverrideToken) __? visibility:(VisibilitySpecifier)? __? constant:(ConstantToken/ImmutableToken)? __ {
+   override:(OverrideToken) __? transient:(TransientToken)? __? visibility:(VisibilitySpecifier)? __? constant:(ConstantToken/ImmutableToken)? __ {
     return {
       visibility: visibility? visibility[0]: null,
       isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
@@ -965,22 +965,33 @@ StateVariableSpecifiers
       isoverride: override?  true: false
     }
    } /
-   visibility:(VisibilitySpecifier) __ override:(OverrideToken) __? constant:(ConstantToken/ImmutableToken)? __ {
-    return {
-       visibility: visibility? visibility[0]: null,
-      isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
-      isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
-      isoverride: override?  true: false
-    }
-   }/
-   visibility:(VisibilitySpecifier) __? constant:(ConstantToken/ImmutableToken)? __? override:(OverrideToken)? __ {
+   visibility:(VisibilitySpecifier) __ transient:(TransientToken)? __? override:(OverrideToken) __? constant:(ConstantToken/ImmutableToken)? __ {
     return {
       visibility: visibility? visibility[0]: null,
       isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      istransient: transient ? true: false,
       isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
       isoverride: override?  true: false
     }
-  } 
+   } /
+   visibility:(VisibilitySpecifier)? __ transient:(TransientToken) __? override:(OverrideToken)? __ {
+    return {
+      visibility: visibility? visibility[0]: null,
+      isconstant: false,
+      istransient: transient ? true: false,
+      isimmutable: false,
+      isoverride: override?  true: false
+    }
+   } /
+   visibility:(VisibilitySpecifier) __? transient:(TransientToken)? __? constant:(ConstantToken/ImmutableToken)? __? override:(OverrideToken)? __ {
+    return {
+      visibility: visibility? visibility[0]: null,
+      isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      istransient: transient ? true: false,
+      isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
+      isoverride: override?  true: false
+    }
+  }
 
 
 StateVariableValue 
@@ -998,6 +1009,7 @@ StateVariableDeclaration
       literal: type,
       visibility: specifiers? specifiers.visibility : null,
       is_constant: specifiers? specifiers.isconstant : false,
+      is_transient: specifiers? specifiers.istransient : false,
       is_immutable: specifiers? specifiers.isimmutable : false,
       is_override: specifiers? specifiers.isoverride: false,
       value: value,

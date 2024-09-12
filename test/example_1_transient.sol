@@ -93,7 +93,9 @@ function decodeErrorData(
     return (val, results);
 }
 contract Foo {
+    uint256 internal transient foo; 
+    error MyErr(uint256);
     function foo() external pure {
-        uint256 transient myTransientVal = 1;
+        require(foo < 1, MyErr(foo));
     }
 }

@@ -584,8 +584,8 @@ GlobalToken     = "global"     !IdentifierPart
 HexToken        = "hex"        !IdentifierPart
 HoursToken      = "hours"      !IdentifierPart
 IfToken         = "if"         !IdentifierPart
-TryToken        = "try"       !IdentifierPart
-CatchToken      = "catch"       !IdentifierPart
+TryToken        = "try"        !IdentifierPart
+CatchToken      = "catch"      !IdentifierPart
 IsToken         = "is"         !IdentifierPart
 IndexedToken    = "indexed"    !IdentifierPart
 ImportToken     = "import"     !IdentifierPart
@@ -594,7 +594,7 @@ InternalToken   = "internal"   !IdentifierPart
 LibraryToken    = "library"    !IdentifierPart
 MappingToken    = "mapping"    !IdentifierPart
 MemoryToken     = "memory"     !IdentifierPart
-TransientToken     = "transient"     !IdentifierPart
+TransientToken  = "transient"  !IdentifierPart
 MinutesToken    = "minutes"    !IdentifierPart
 ModifierToken   = "modifier"   !IdentifierPart
 NewToken        = "new"        !IdentifierPart
@@ -939,7 +939,7 @@ StateVariableSpecifiers
     }
    } 
    /
-  constant:(ConstantToken/ImmutableToken) __? override:(OverrideToken)? __? visibility:(VisibilitySpecifier)? __ {
+  constant:(ConstantToken/ImmutableToken) __? transient:(TransientToken)? __? override:(OverrideToken)? __? visibility:(VisibilitySpecifier)? __ {
     return {
       visibility: visibility? visibility[0]: null,
       isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
@@ -956,7 +956,7 @@ StateVariableSpecifiers
       isoverride: override?  true: false
     }
    } /
-   override:(OverrideToken) __? visibility:(VisibilitySpecifier)? __? constant:(ConstantToken/ImmutableToken)? __ {
+   override:(OverrideToken) __? transient:(TransientToken)? __? visibility:(VisibilitySpecifier)? __? constant:(ConstantToken/ImmutableToken)? __ {
     return {
       visibility: visibility? visibility[0]: null,
       isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
@@ -964,18 +964,20 @@ StateVariableSpecifiers
       isoverride: override?  true: false
     }
    } /
-   visibility:(VisibilitySpecifier) __ override:(OverrideToken) __? constant:(ConstantToken/ImmutableToken)? __ {
+   visibility:(VisibilitySpecifier) __ transient:(TransientToken)? __? override:(OverrideToken) __? constant:(ConstantToken/ImmutableToken)? __ {
     return {
-       visibility: visibility? visibility[0]: null,
+      visibility: visibility? visibility[0]: null,
       isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      istransient: transient ? true: false,
       isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
       isoverride: override?  true: false
     }
    }/
-   visibility:(VisibilitySpecifier) __? constant:(ConstantToken/ImmutableToken)? __? override:(OverrideToken)? __ {
+   visibility:(VisibilitySpecifier) __? transient:(TransientToken)? __? constant:(ConstantToken/ImmutableToken)? __? override:(OverrideToken)? __ {
     return {
       visibility: visibility? visibility[0]: null,
       isconstant: constant ? (constant[0] === "constant" ? true: false) : false,
+      istransient: transient ? true: false,
       isimmutable: constant? (constant[0] === "immutable" ? true: false) : false,
       isoverride: override?  true: false
     }
@@ -996,6 +998,7 @@ StateVariableDeclaration
       literal: type,
       visibility: specifiers? specifiers.visibility : null,
       is_constant: specifiers? specifiers.isconstant : false,
+      is_transient: specifiers? specifiers.istransient : false,
       is_immutable: specifiers? specifiers.isimmutable : false,
       is_override: specifiers? specifiers.isoverride: false,
       value: value,

@@ -165,6 +165,7 @@ describe('Should parse constructor, receive and fallback', function () {
 describe('Should parse new stuff', function () {
 	it('panic catch', function () {
 		const all = SolidityParser.parseFile('./test/example_1_transient.sol', false).body;
+		console.log(all);
 	});
 });
 
