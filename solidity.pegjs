@@ -594,6 +594,7 @@ InternalToken   = "internal"   !IdentifierPart
 LibraryToken    = "library"    !IdentifierPart
 MappingToken    = "mapping"    !IdentifierPart
 MemoryToken     = "memory"     !IdentifierPart
+TransientToken     = "transient"     !IdentifierPart
 MinutesToken    = "minutes"    !IdentifierPart
 ModifierToken   = "modifier"   !IdentifierPart
 NewToken        = "new"        !IdentifierPart
@@ -926,6 +927,7 @@ VisibilitySpecifier
 StorageLocationSpecifier
   = StorageToken
   / MemoryToken
+  / TransientToken
   / CalldataToken
 
 StateVariableSpecifiers
